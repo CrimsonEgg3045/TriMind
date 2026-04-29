@@ -1,6 +1,6 @@
 /* ================================================================
    Tri Mind — Chat UI Styles
-   ChatGPT/Claude inspired dark theme
+   ChatGPT/Claude inspired dark theme with diagram support
    ================================================================ */
 
 :root {
@@ -381,7 +381,55 @@ body {
 
 .message-bubble mjx-container { overflow-x: auto; padding: 4px 0; }
 
-/* ── Generated Image ───────────────────────────────────────────── */
+/* ── Diagram Container ─────────────────────────────────────────── */
+.diagram-container {
+    margin: 20px 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    background: #ffffff;
+    animation: fadeIn 0.5s ease;
+}
+
+.diagram-render {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.diagram-render svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.diagram-render canvas {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.diagram-description {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding: 10px 16px;
+    text-align: center;
+    background: var(--bg-input);
+    border-top: 1px solid var(--border);
+    font-style: italic;
+}
+
+.diagram-error {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.85rem;
+    padding: 20px;
+    text-align: center;
+}
+
+/* ── Generated Image (fallback) ────────────────────────────────── */
 .generated-image {
     margin: 16px 0;
     border-radius: var(--radius-md);
@@ -559,4 +607,5 @@ body {
     .suggestion-grid { grid-template-columns: 1fr; }
     .message-content { max-width: 92%; }
     .message-avatar { width: 28px; height: 28px; font-size: 0.75rem; }
+    .diagram-render { padding: 8px; }
 }

@@ -1,6 +1,7 @@
 """
 Orchestrator — Coordinates all agents in parallel using asyncio.
 Handles fault tolerance, timeouts, and demo mode caching.
+Supports diagram objects (SVG/Canvas/Chart.js) and fallback images.
 """
 
 import asyncio
@@ -31,13 +32,21 @@ async def process_query(query: str, use_demo: bool = True) -> dict:
         return_exceptions=False,
     )
 
-    # Extract visual text and optional image
+    # Extract visual components (diagram, image, text)
+    visual_text = ""
+    visual_diagram = None
+    visual_image = None
+
     if isinstance(visual_result, dict):
-        visual_text = visual_result.get("text", "_Visual section unavailable._")
-        visual_image = visual_result.get("image", None)
+        visual_text = visual_result.get("text", "")
+        visual_type = visual_result.get("type", "text")
+
+        if visual_type == "diagram" and visual_result.get("diagram"):
+            visual_diagram = visual_result["diagram"]
+        elif visual_type == "image" and visual_result.get("image"):
+            visual_image = visual_result["image"]
     else:
         visual_text = str(visual_result)
-        visual_image = None
 
     # --- Run synthesizer ---
     try:
@@ -48,9 +57,9 @@ async def process_query(query: str, use_demo: bool = True) -> dict:
                 math_result=math_result,
                 visual_result=visual_text,
             ),
-            timeout=50.0,
+            timeout=60.0,
         )
-    except Exception as e:
+    except Exception:
         synthesized = synthesizer._manual_synthesis(
             explanation_result, math_result, visual_text
         )
@@ -59,6 +68,7 @@ async def process_query(query: str, use_demo: bool = True) -> dict:
         "source": "live",
         "query": query,
         "synthesized": synthesized,
+        "visual_diagram": visual_diagram,
         "visual_image": visual_image,
     }
 
@@ -68,6 +78,6 @@ async def _safe_call(agent_name: str, coro):
     try:
         return await asyncio.wait_for(coro, timeout=60.0)
     except asyncio.TimeoutError:
-        return f"_⏱️ The {agent_name} agent timed out. This section is temporarily unavailable._"
+        return f"_The {agent_name} section is being prepared and will be available shortly._"
     except Exception as e:
-        return f"_⚠️ The {agent_name} agent encountered an error: {str(e)[:100]}. This section is temporarily unavailable._"
+        return f"_The {agent_name} section is temporarily being updated._"

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Tri Mind — Multi-Agent AI Study Assistant">
-    <title>Tri Mind</title>
+    <meta name="description" content="Tri Mind — Multi-Agent AI Study Assistant powered by DeepSeek, OpenRouter, and Cloudflare AI">
+    <title>Tri Mind — AI Study Assistant</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -17,6 +17,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
@@ -47,15 +48,15 @@
             <div class="sidebar-section">
                 <p class="sidebar-label">Quick Topics</p>
                 <button class="topic-btn" onclick="askDemo('Explain the Fourier Transform')">🔊 Fourier Transform</button>
-                <button class="topic-btn" onclick="askDemo('Explain Newton\\'s Laws of Motion')">🍎 Newton's Laws</button>
-                <button class="topic-btn" onclick="askDemo('Explain how Neural Networks work')">🧠 Neural Networks</button>
+                <button class="topic-btn" onclick="askDemo('Explain the Taylor Series')">📈 Taylor Series</button>
+                <button class="topic-btn" onclick="askDemo('Explain Newton\'s Laws of Motion')">🍎 Newton's Laws</button>
             </div>
             <div class="sidebar-section">
                 <p class="sidebar-label">Agents</p>
-                <div class="agent-pill"><span class="dot dot-blue"></span>Explanation · Groq</div>
-                <div class="agent-pill"><span class="dot dot-purple"></span>Math · Gemma 3</div>
-                <div class="agent-pill"><span class="dot dot-cyan"></span>Visual · Pollinations</div>
-                <div class="agent-pill"><span class="dot dot-green"></span>Synthesizer · Groq</div>
+                <div class="agent-pill"><span class="dot dot-blue"></span>Explanation · DeepSeek</div>
+                <div class="agent-pill"><span class="dot dot-purple"></span>Math · OpenRouter</div>
+                <div class="agent-pill"><span class="dot dot-cyan"></span>Visual · DeepSeek + CF AI</div>
+                <div class="agent-pill"><span class="dot dot-green"></span>Synthesizer · DeepSeek</div>
             </div>
         </aside>
 
@@ -88,17 +89,17 @@
                             <span class="suggestion-icon">🔊</span>
                             <span class="suggestion-text">Explain the Fourier Transform</span>
                         </button>
-                        <button class="suggestion-card" onclick="askDemo('Explain Newton\\'s Laws of Motion')">
+                        <button class="suggestion-card" onclick="askDemo('Explain the Taylor Series')">
+                            <span class="suggestion-icon">📈</span>
+                            <span class="suggestion-text">Explain the Taylor Series</span>
+                        </button>
+                        <button class="suggestion-card" onclick="askDemo('Explain Newton\'s Laws of Motion')">
                             <span class="suggestion-icon">🍎</span>
                             <span class="suggestion-text">Explain Newton's Laws</span>
                         </button>
-                        <button class="suggestion-card" onclick="askDemo('Explain how Neural Networks work')">
-                            <span class="suggestion-icon">🧠</span>
-                            <span class="suggestion-text">How Neural Networks work</span>
-                        </button>
-                        <button class="suggestion-card" onclick="askDemo('Derive the quadratic formula step by step')">
+                        <button class="suggestion-card" onclick="askDemo('Explain how Gradient Descent works')">
                             <span class="suggestion-icon">📐</span>
-                            <span class="suggestion-text">Derive the quadratic formula</span>
+                            <span class="suggestion-text">How Gradient Descent works</span>
                         </button>
                     </div>
                 </div>
@@ -120,7 +121,7 @@
                         </svg>
                     </button>
                 </div>
-                <p class="input-hint">Powered by LLaMA 3.3 · Gemma 3 · FLUX</p>
+                <p class="input-hint">Powered by DeepSeek · OpenRouter · Cloudflare AI</p>
             </div>
         </main>
     </div>

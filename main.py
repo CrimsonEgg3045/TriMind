@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 import orchestrator
 
-app = FastAPI(title="Tri Mind — AI Study Assistant", version="1.0.0")
+app = FastAPI(title="Tri Mind — AI Study Assistant", version="2.0.0")
 
 FRONTEND_DIR = Path(__file__).parent / "frontend"
 app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
@@ -50,9 +50,9 @@ async def health():
     return {
         "status": "ok",
         "agents": {
-            "explanation": bool(os.getenv("GROQ_API_KEY")),
+            "explanation": bool(os.getenv("DEEPSEEK_API_KEY")),
             "math": bool(os.getenv("OPENROUTER_API_KEY")),
-            "visual": True,  # Pollinations.ai — free, no key needed
-            "synthesizer": bool(os.getenv("GROQ_API_KEY")),
+            "visual": bool(os.getenv("DEEPSEEK_API_KEY")),
+            "synthesizer": bool(os.getenv("DEEPSEEK_API_KEY")),
         },
     }
