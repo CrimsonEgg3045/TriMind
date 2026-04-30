@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: trimind
+    env: docker
+    plan: free
+    envVars:
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: CF_WORKER_URL
+        sync: false
