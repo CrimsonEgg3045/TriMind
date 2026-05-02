@@ -10,3 +10,5 @@ services:
         sync: false
       - key: CF_WORKER_URL
         sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
