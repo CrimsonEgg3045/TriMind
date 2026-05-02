@@ -601,11 +601,280 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Sidebar Layout & Toggle ─────────────────────────────────────── */
+.sidebar {
+    transition: transform 0.3s ease, width 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.collapsed {
+    transform: translateX(-100%);
+    width: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.icon-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.chat-header {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid transparent;
+}
+
+.hamburger-btn {
+    display: none; /* Shown via JS when sidebar is collapsed */
+}
+
+.sidebar.collapsed ~ .chat-main .hamburger-btn {
+    display: flex;
+}
+
+.sidebar-scrollable {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+.sidebar-scrollable::-webkit-scrollbar { width: 4px; }
+.sidebar-scrollable::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* ── History List ──────────────────────────────────────────────── */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.history-item {
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background 0.15s, color 0.15s;
+}
+
+.history-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.empty-history {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    padding: 8px 12px;
+    font-style: italic;
+}
+
+/* ── Incognito Button ──────────────────────────────────────────── */
+.incognito-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 16px;
+    background: transparent;
+    border: 1px dashed var(--text-muted);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.incognito-btn.active {
+    background: rgba(167,139,250,0.1);
+    border-color: var(--purple);
+    color: var(--purple);
+}
+
+/* ── Support Me Section ────────────────────────────────────────── */
+.sidebar-footer {
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.support-me-btn {
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(244, 63, 94, 0.05));
+    border: 1px solid rgba(244, 63, 94, 0.2);
+    border-radius: var(--radius-sm);
+    color: #f43f5e;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.support-me-btn:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(244, 63, 94, 0.1));
+}
+
+.support-me-btn.highlight {
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+}
+
+.support-me-content {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    animation: fadeIn 0.3s ease;
+}
+
+.donate-btn {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px;
+    background: #f43f5e;
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.donate-btn:hover {
+    background: #e11d48;
+}
+
+/* ── User Auth Section ─────────────────────────────────────────── */
+.user-auth-section {
+    position: relative;
+    min-height: 40px;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.user-profile:hover {
+    background: var(--bg-hover);
+}
+
+.user-profile img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.user-profile span {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.logout-popover {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 4px;
+    box-shadow: var(--shadow);
+    z-index: 10;
+}
+
+.logout-popover button {
+    width: 100%;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 4px;
+    text-align: left;
+}
+
+.logout-popover button:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
 /* ── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .sidebar { display: none; }
+    .sidebar {
+        position: fixed;
+        z-index: 100;
+        height: 100%;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+    }
+    
+    .sidebar.collapsed {
+        box-shadow: none;
+    }
+    
+    .hamburger-btn {
+        display: flex;
+    }
+
     .suggestion-grid { grid-template-columns: 1fr; }
     .message-content { max-width: 92%; }
     .message-avatar { width: 28px; height: 28px; font-size: 0.75rem; }
     .diagram-render { padding: 8px; }
 }
+

@@ -18,13 +18,21 @@
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <div class="app-shell">
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
+                <button class="icon-btn" onclick="toggleSidebar()" title="Collapse menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
                 <div class="logo">
                     <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
                         <circle cx="16" cy="16" r="14" stroke="url(#g)" stroke-width="2" fill="none"/>
@@ -42,26 +50,69 @@
                     <span>Tri Mind</span>
                 </div>
             </div>
-            <button class="new-chat-btn" id="new-chat-btn" onclick="resetChat()">
-                <span>+</span> New Chat
-            </button>
-            <div class="sidebar-section">
-                <p class="sidebar-label">Quick Topics</p>
-                <button class="topic-btn" onclick="askDemo('Explain the Fourier Transform')">🔊 Fourier Transform</button>
-                <button class="topic-btn" onclick="askDemo('Explain the Taylor Series')">📈 Taylor Series</button>
-                <button class="topic-btn" onclick="askDemo('Explain Newton\'s Laws of Motion')">🍎 Newton's Laws</button>
+            
+            <div class="sidebar-top-actions">
+                <button class="new-chat-btn" id="new-chat-btn" onclick="resetChat()">
+                    <span>+</span> New Chat
+                </button>
+                
+                <button class="incognito-btn hidden" id="incognito-btn" onclick="toggleIncognito()" title="Toggle Incognito Mode">
+                    <span class="incognito-icon">🕵️</span> <span class="incognito-text">Incognito: Off</span>
+                </button>
             </div>
-            <div class="sidebar-section">
-                <p class="sidebar-label">Agents</p>
-                <div class="agent-pill"><span class="dot dot-blue"></span>Explanation · DeepSeek</div>
-                <div class="agent-pill"><span class="dot dot-purple"></span>Math · OpenRouter</div>
-                <div class="agent-pill"><span class="dot dot-cyan"></span>Visual · DeepSeek + CF AI</div>
-                <div class="agent-pill"><span class="dot dot-green"></span>Synthesizer · DeepSeek</div>
+            
+            <div class="sidebar-scrollable">
+                <div class="sidebar-section">
+                    <p class="sidebar-label">Recent Chats</p>
+                    <div id="chat-history-list" class="history-list">
+                        <div class="empty-history">Login to see your history</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <p class="sidebar-label">Quick Topics</p>
+                    <button class="topic-btn" onclick="askDemo('Explain the Fourier Transform')">🔊 Fourier Transform</button>
+                    <button class="topic-btn" onclick="askDemo('Explain the Taylor Series')">📈 Taylor Series</button>
+                    <button class="topic-btn" onclick="askDemo('Explain Newton\'s Laws of Motion')">🍎 Newton's Laws</button>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="support-me-wrapper" id="support-me-wrapper">
+                    <button class="support-me-btn" id="support-me-btn" onclick="toggleSupport()">
+                        ❤️ Support Me
+                    </button>
+                    <div class="support-me-content hidden" id="support-me-content">
+                        <p>If you find this project useful or enjoyable, consider supporting it.<br><br>It's built and maintained independently, and even small contributions help cover hosting and keep it improving.<br><br>No pressure at all—just having you use it already means a lot.</p>
+                        <button class="donate-btn" onclick="donateWithRazorpay()">Click here to donate</button>
+                    </div>
+                </div>
+                
+                <div class="user-auth-section" id="user-auth-section">
+                    <div id="google-login-btn"></div>
+                    <div class="user-profile hidden" id="user-profile" onclick="toggleLogout()">
+                        <img id="user-avatar" src="" alt="User Avatar">
+                        <span id="user-name">User Name</span>
+                    </div>
+                    <div class="logout-popover hidden" id="logout-popover">
+                        <button onclick="logout()">Logout</button>
+                    </div>
+                </div>
             </div>
         </aside>
 
         <!-- Main Chat Area -->
         <main class="chat-main">
+            <!-- Top bar for collapsed state -->
+            <div class="chat-header">
+                <button class="icon-btn hamburger-btn" onclick="toggleSidebar()" title="Open menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
             <!-- Chat Messages -->
             <div class="chat-messages" id="chat-messages">
                 <!-- Welcome state -->

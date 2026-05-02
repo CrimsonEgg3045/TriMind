@@ -55,7 +55,12 @@ async function processQuery(query) {
         const response = await fetch('/api/ask', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, use_demo: true }),
+            body: JSON.stringify({ 
+                query, 
+                use_demo: true,
+                user_id: window.currentUser ? window.currentUser.id : null,
+                incognito: window.incognitoMode
+            }),
         });
 
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
@@ -354,3 +359,163 @@ function scrollToBottom() {
 
 // ── Focus input on load ───────────────────────────────────────────
 queryInput.focus();
+
+// ── Global State & Initialization ─────────────────────────────────
+window.currentUser = null;
+window.incognitoMode = false;
+
+document.addEventListener("DOMContentLoaded", async () => {
+    // Check health & initialize Google Auth
+    try {
+        const res = await fetch('/api/health');
+        const data = await res.json();
+        if (data.google_client_id) {
+            initGoogleAuth(data.google_client_id);
+        } else {
+            console.warn("Google Client ID not set on server.");
+        }
+    } catch (e) {
+        console.error("Failed to check health", e);
+    }
+
+    // Auto-open sidebar and highlight support me on load
+    if (window.innerWidth > 768) {
+        const supportBtn = document.getElementById('support-me-btn');
+        if (supportBtn) {
+            supportBtn.classList.add('highlight');
+            setTimeout(() => supportBtn.classList.remove('highlight'), 4000);
+        }
+    }
+});
+
+// ── Google Auth ───────────────────────────────────────────────────
+function initGoogleAuth(clientId) {
+    if (typeof google === 'undefined') {
+        setTimeout(() => initGoogleAuth(clientId), 500);
+        return;
+    }
+    google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleCredentialResponse
+    });
+    google.accounts.id.renderButton(
+        document.getElementById("google-login-btn"),
+        { theme: "outline", size: "large", width: 230 }
+    );
+}
+
+async function handleCredentialResponse(response) {
+    try {
+        const res = await fetch('/api/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ credential: response.credential })
+        });
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            window.currentUser = data.user;
+            document.getElementById('google-login-btn').classList.add('hidden');
+            const profile = document.getElementById('user-profile');
+            profile.classList.remove('hidden');
+            document.getElementById('user-avatar').src = window.currentUser.picture;
+            document.getElementById('user-name').textContent = window.currentUser.name;
+            
+            document.getElementById('incognito-btn').classList.remove('hidden');
+            
+            // Highlight support me on login
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.remove('collapsed');
+            const supportBtn = document.getElementById('support-me-btn');
+            supportBtn.classList.add('highlight');
+            setTimeout(() => supportBtn.classList.remove('highlight'), 4000);
+            
+            fetchHistory();
+        } else {
+            alert('Login failed: ' + data.message);
+        }
+    } catch (e) {
+        console.error('Error verifying token', e);
+    }
+}
+
+function toggleLogout() {
+    document.getElementById('logout-popover').classList.toggle('hidden');
+}
+
+function logout() {
+    window.currentUser = null;
+    document.getElementById('google-login-btn').classList.remove('hidden');
+    document.getElementById('user-profile').classList.add('hidden');
+    document.getElementById('logout-popover').classList.add('hidden');
+    document.getElementById('incognito-btn').classList.add('hidden');
+    
+    document.getElementById('chat-history-list').innerHTML = '<div class="empty-history">Login to see your history</div>';
+}
+
+// ── History ───────────────────────────────────────────────────────
+async function fetchHistory() {
+    if (!window.currentUser) return;
+    try {
+        const res = await fetch(`/api/history?user_id=${window.currentUser.id}`);
+        const data = await res.json();
+        if (data.status === 'success') {
+            renderHistory(data.history);
+        }
+    } catch (e) {
+        console.error('Failed to fetch history', e);
+    }
+}
+
+function renderHistory(history) {
+    const list = document.getElementById('chat-history-list');
+    list.innerHTML = '';
+    
+    if (history.length === 0) {
+        list.innerHTML = '<div class="empty-history">No history found</div>';
+        return;
+    }
+    
+    // Sort latest first
+    history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    history.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'history-item';
+        btn.textContent = item.query;
+        btn.onclick = () => loadHistoryChat(item);
+        list.appendChild(btn);
+    });
+}
+
+function loadHistoryChat(item) {
+    resetChat();
+    addMessage('user', item.query);
+    addAIResponse(item.response);
+}
+
+// ── Sidebar & UI Toggles ──────────────────────────────────────────
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+function toggleIncognito() {
+    window.incognitoMode = !window.incognitoMode;
+    const btn = document.getElementById('incognito-btn');
+    if (window.incognitoMode) {
+        btn.classList.add('active');
+        btn.innerHTML = '<span class="incognito-icon">🕵️</span> <span class="incognito-text">Incognito: On</span>';
+    } else {
+        btn.classList.remove('active');
+        btn.innerHTML = '<span class="incognito-icon">🕵️</span> <span class="incognito-text">Incognito: Off</span>';
+    }
+}
+
+function toggleSupport() {
+    document.getElementById('support-me-content').classList.toggle('hidden');
+}
+
+// ── Razorpay Donation ─────────────────────────────────────────────
+function donateWithRazorpay() {
+    window.open('https://razorpay.me/@imad', '_blank');
+}
