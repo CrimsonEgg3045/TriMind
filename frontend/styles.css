@@ -523,7 +523,7 @@ body {
 
 /* ── Input Bar ─────────────────────────────────────────────────── */
 .input-bar {
-    padding: 12px 16px 16px;
+    padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
     background: linear-gradient(to top, var(--bg-primary) 70%, transparent);
 }
 
@@ -591,6 +591,44 @@ body {
 /* ── Utilities ─────────────────────────────────────────────────── */
 .hidden { display: none !important; }
 
+/* ── Flat SVG Icon Helpers ───────────────────────────────────── */
+.btn-icon {
+    display: inline-block;
+    vertical-align: -3px;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+
+.suggestion-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.suggestion-icon svg,
+.btn-icon svg {
+    display: block;
+}
+
+.message-avatar svg {
+    display: block;
+}
+
+.incognito-icon {
+    display: flex;
+    align-items: center;
+}
+
+.incognito-icon svg {
+    display: block;
+}
+
+.agent-tag svg {
+    display: inline-block;
+    vertical-align: -2px;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -603,7 +641,11 @@ body {
 
 /* ── Sidebar Layout & Toggle ─────────────────────────────────────── */
 .sidebar {
-    transition: transform 0.3s ease, width 0.3s ease;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.2s ease;
+    will-change: transform, width;
     display: flex;
     flex-direction: column;
 }
@@ -614,6 +656,24 @@ body {
     padding: 0;
     border: none;
     overflow: hidden;
+    opacity: 0;
+}
+
+/* ── Mobile Sidebar Overlay ───────────────────────────────────────── */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
 }
 
 .sidebar-header {
@@ -870,6 +930,15 @@ body {
     
     .hamburger-btn {
         display: flex;
+    }
+
+    .sidebar-overlay {
+        display: block;
+        pointer-events: none;
+    }
+    
+    .sidebar-overlay.active {
+        pointer-events: auto;
     }
 
     .suggestion-grid { grid-template-columns: 1fr; }
