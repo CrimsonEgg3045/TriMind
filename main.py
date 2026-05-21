@@ -100,4 +100,5 @@ async def health():
             "visual": bool(os.getenv("DEEPSEEK_API_KEY")),
             "synthesizer": bool(os.getenv("DEEPSEEK_API_KEY")),
         },
+        "database": database._ready,
     }

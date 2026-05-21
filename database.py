@@ -17,8 +17,11 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
-# PostgREST endpoint
-REST_URL = f"{SUPABASE_URL}/rest/v1" if SUPABASE_URL else ""
+# Handle case where user accidentally included /rest/v1 in the environment variable
+if SUPABASE_URL.endswith("/rest/v1"):
+    REST_URL = SUPABASE_URL
+else:
+    REST_URL = f"{SUPABASE_URL}/rest/v1" if SUPABASE_URL else ""
 
 # Common headers for every request
 HEADERS = {
