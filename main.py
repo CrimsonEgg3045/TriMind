@@ -11,6 +11,7 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
+from typing import Optional
 from pydantic import BaseModel
 import orchestrator
 from google.oauth2 import id_token
@@ -31,7 +32,7 @@ async def serve_index():
 class AskRequest(BaseModel):
     query: str
     use_demo: bool = True
-    user_id: str = None
+    user_id: Optional[str] = None
     incognito: bool = False
 
 class VerifyRequest(BaseModel):
