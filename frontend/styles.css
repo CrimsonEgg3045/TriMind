@@ -581,6 +581,59 @@ body {
 .send-btn:active { transform: scale(0.97); }
 .send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
 
+/* ── Mic Button (Speech-to-Text) ──────────────────────────────── */
+.mic-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s, transform 0.15s, box-shadow 0.3s;
+    position: relative;
+}
+
+.mic-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    transform: scale(1.05);
+}
+
+.mic-btn:active {
+    transform: scale(0.97);
+}
+
+.mic-btn.recording {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    animation: micPulse 1.5s ease-in-out infinite;
+}
+
+.mic-btn.recording:hover {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+
+.mic-btn.recording .mic-icon { display: none; }
+.mic-btn.recording .mic-icon-stop { display: block !important; }
+
+.mic-btn.unsupported {
+    opacity: 0.25;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+@keyframes micPulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
 .input-hint {
     text-align: center;
     font-size: 0.7rem;

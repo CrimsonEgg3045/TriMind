@@ -541,3 +541,104 @@ function toggleSupport() {
 function donateWithRazorpay() {
     window.open('https://razorpay.me/@imad', '_blank');
 }
+
+// ── Speech-to-Text (Web Speech API) ──────────────────────────
+(function initSpeechToText() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const micBtn = document.getElementById('mic-btn');
+
+    if (!SpeechRecognition || !micBtn) {
+        // Browser doesn't support Speech API — hide the button gracefully
+        if (micBtn) micBtn.classList.add('unsupported');
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    let isListening = false;
+    let finalTranscript = '';
+
+    micBtn.addEventListener('click', () => {
+        if (isProcessing) return; // don't record while AI is responding
+
+        if (isListening) {
+            recognition.stop();
+        } else {
+            finalTranscript = '';
+            try {
+                recognition.start();
+            } catch (e) {
+                // Already started — ignore
+                console.warn('Speech recognition start error:', e);
+            }
+        }
+    });
+
+    recognition.onstart = () => {
+        isListening = true;
+        micBtn.classList.add('recording');
+        micBtn.title = 'Stop recording';
+        queryInput.placeholder = '🎙️ Listening...';
+    };
+
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript;
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+
+        // Show final + interim text in the input box in real time
+        const existingText = queryInput.value.substring(0, queryInput.value.length - (queryInput.dataset.lastInterim || '').length);
+        queryInput.value = existingText + finalTranscript + interimTranscript;
+        queryInput.dataset.lastInterim = interimTranscript;
+
+        // Auto-resize textarea to fit new content
+        queryInput.style.height = 'auto';
+        queryInput.style.height = Math.min(queryInput.scrollHeight, 160) + 'px';
+    };
+
+    recognition.onend = () => {
+        isListening = false;
+        micBtn.classList.remove('recording');
+        micBtn.title = 'Voice input';
+        queryInput.placeholder = 'Ask a question...';
+
+        // Clean up interim tracking
+        delete queryInput.dataset.lastInterim;
+
+        // Clean up final transcript into the input value
+        const currentValue = queryInput.value.trim();
+        if (currentValue) {
+            queryInput.value = currentValue;
+            queryInput.focus();
+        }
+    };
+
+    recognition.onerror = (event) => {
+        console.warn('Speech recognition error:', event.error);
+
+        isListening = false;
+        micBtn.classList.remove('recording');
+        micBtn.title = 'Voice input';
+        queryInput.placeholder = 'Ask a question...';
+        delete queryInput.dataset.lastInterim;
+
+        // Show user-friendly feedback for common errors
+        if (event.error === 'not-allowed') {
+            queryInput.placeholder = 'Microphone access denied. Check browser settings.';
+            setTimeout(() => { queryInput.placeholder = 'Ask a question...'; }, 3000);
+        } else if (event.error === 'no-speech') {
+            queryInput.placeholder = 'No speech detected. Try again.';
+            setTimeout(() => { queryInput.placeholder = 'Ask a question...'; }, 2000);
+        }
+    };
+})();
