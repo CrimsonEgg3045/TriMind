@@ -1,110 +1,92 @@
 """
-Math / Derivation Agent — Powered by OpenRouter
-Generates step-by-step mathematical derivations and logical reasoning.
-
-Model cascade (tries each in order until one succeeds):
-  1. openai/gpt-oss-20b:free      — primary (fast, reliable)
-  2. nvidia/nemotron-3-super-120b-a12b:free — large reasoning model
-  3. openai/gpt-oss-120b:free     — largest free fallback
-  4. google/gemma-3-27b-it:free   — last resort (often rate-limited)
+Math / Derivation Agent — Powered by Google Gemini
+Generates step-by-step mathematical derivations and logical reasoning
+using the Gemini 2.5 Flash model via the Generative Language REST API.
 """
 
-import asyncio
 import httpx
 import os
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_URL = (
+    f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+)
 
-# Ordered list of models to try — first working one wins
-MODEL_CASCADE = [
-    "openai/gpt-oss-20b:free",
-    "nvidia/nemotron-3-super-120b-a12b:free",
-    "openai/gpt-oss-120b:free",
-    "google/gemma-3-27b-it:free",
-]
+SYSTEM_PROMPT = """\
+You are an expert mathematician and rigorous logical thinker.
 
-# Error codes that mean "this model won't work right now, try the next one"
-FALLBACK_CODES = {429, 402, 503, 529}
+Your task: given a topic or question, produce a **clear, step-by-step mathematical derivation or logical analysis**.
 
-SYSTEM_PROMPT = """You are a brilliant mathematician and logical thinker. Your job is to provide step-by-step mathematical derivations and logical reasoning.
-
-Rules:
-- Provide clear, step-by-step derivations. Never skip steps.
-- Use proper mathematical notation (you can use LaTeX-style notation with $ delimiters).
-- Label each step clearly (Step 1, Step 2, etc.).
-- Show the logical progression from assumptions to conclusions.
-- Include relevant formulas and equations.
-- Explain WHY each step follows from the previous one.
-- If the topic isn't inherently mathematical, provide logical/analytical reasoning instead.
-- Use markdown formatting for readability.
-- Keep derivations focused — aim for clarity over exhaustiveness.
-- End with a concise summary of the key mathematical result.
+### Output rules
+1. **Structure every response** with numbered steps (Step 1, Step 2, …).
+2. **Use LaTeX-style math** delimited by `$` (inline) and `$$` (display).
+   - Example inline: $E = mc^2$
+   - Example display:
+     $$F = ma$$
+3. **Never skip steps.** Show every algebraic manipulation, substitution, and simplification.
+4. **Explain the reasoning** between steps — state *why* each transformation is valid (cite theorems, identities, or definitions as appropriate).
+5. **Include all relevant formulas** and define every variable on first use.
+6. If the topic is **not inherently mathematical**, provide a structured logical/analytical breakdown instead (premises → deductions → conclusion).
+7. **End with a boxed or highlighted final result** and a one-sentence summary of the key insight.
+8. Use **Markdown** formatting (bold, bullets, headers) for readability.
+9. Keep the derivation **focused and precise** — aim for clarity, not verbosity.
 """
-
-
-async def _try_model(client: httpx.AsyncClient, model: str, payload: dict, headers: dict) -> str | None:
-    """
-    Attempt a single model. Returns the text content on success, or None if
-    the model is unavailable (rate-limited / quota exceeded). Raises on hard errors.
-    """
-    body = {**payload, "model": model}
-    for attempt in range(2):  # up to 2 retries per model for transient 429s
-        response = await client.post(OPENROUTER_URL, json=body, headers=headers)
-        if response.status_code in FALLBACK_CODES:
-            if attempt == 0:
-                await asyncio.sleep(2 ** attempt)
-                continue
-            return None  # give up on this model, cascade to next
-        response.raise_for_status()
-        data = response.json()
-        content = data["choices"][0]["message"]["content"]
-        if content:
-            return content
-        return None  # empty response — try next model
-    return None
 
 
 async def run(query: str) -> str:
     """Generate a step-by-step mathematical derivation for the given query."""
-    if not OPENROUTER_API_KEY:
-        return "_Math agent is not configured (missing OPENROUTER_API_KEY)._"
+    if not GEMINI_API_KEY:
+        return "_Math agent is not configured (missing GEMINI_API_KEY)._"
 
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://study-assistant.app",
-        "X-Title": "Tri Mind Study Assistant",
-    }
+    url = f"{GEMINI_URL}?key={GEMINI_API_KEY}"
 
     payload = {
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
+        "contents": [
             {
                 "role": "user",
-                "content": f"Provide a step-by-step mathematical derivation or logical analysis for: {query}",
-            },
+                "parts": [
+                    {
+                        "text": (
+                            f"{SYSTEM_PROMPT}\n\n---\n\n"
+                            f"Provide a step-by-step mathematical derivation or logical analysis for:\n\n{query}"
+                        )
+                    }
+                ],
+            }
         ],
-        "temperature": 0.3,
-        "max_tokens": 1500,
+        "generationConfig": {
+            "temperature": 0.3,
+            "maxOutputTokens": 2048,
+        },
     }
 
-    last_error: Exception | None = None
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                url,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+            )
+            response.raise_for_status()
+            data = response.json()
 
-    async with httpx.AsyncClient(timeout=45.0) as client:
-        for model in MODEL_CASCADE:
-            try:
-                result = await _try_model(client, model, payload, headers)
-                if result is not None:
-                    return result
-                # result is None → model unavailable, try next in cascade
-            except httpx.HTTPStatusError as e:
-                last_error = e
-                if e.response.status_code not in FALLBACK_CODES:
-                    break  # hard error — don't continue cascade
-            except httpx.RequestError as e:
-                last_error = e
-                break  # network error — don't loop endlessly
+            # Extract text from the Gemini response structure
+            candidates = data.get("candidates", [])
+            if not candidates:
+                return "_Math agent received an empty response from Gemini._"
 
-    error_detail = str(last_error)[:150] if last_error else "all models unavailable"
-    return f"_Math agent encountered an error: {error_detail}_"
+            parts = candidates[0].get("content", {}).get("parts", [])
+            text = "".join(part.get("text", "") for part in parts)
+
+            if text.strip():
+                return text.strip()
+            return "_Math agent received an empty response from Gemini._"
+
+    except httpx.HTTPStatusError as e:
+        detail = e.response.text[:200] if e.response else str(e)
+        return f"_Math agent encountered an API error: {detail}_"
+    except httpx.RequestError as e:
+        return f"_Math agent encountered a network error: {str(e)[:150]}_"
+    except Exception as e:
+        return f"_Math agent encountered an unexpected error: {str(e)[:150]}_"

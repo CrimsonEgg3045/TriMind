@@ -6,7 +6,7 @@ Tri Mind is an advanced, multi-agent AI study assistant designed to provide comp
 
 - **Multi-Agent Architecture**: Uses an asyncio-based orchestrator to run multiple AI agents in parallel for maximum speed and efficiency.
 - **Explanation Agent**: Breaks down complex concepts into intuitive, easy-to-digest explanations. Powered by DeepSeek.
-- **Math Agent**: Handles complex mathematical derivations and problem-solving. Powered by OpenRouter.
+- **Math Agent**: Handles complex mathematical derivations and problem-solving. Powered by Google Gemini.
 - **Visual Agent**: Generates diagrams (SVG/Canvas) or images to visually represent concepts. Integrated with a custom Cloudflare Worker and DeepSeek.
 - **Synthesizer Agent**: Combines the outputs from the Explanation, Math, and Visual agents into a single, cohesive tutorial-like response. Powered by DeepSeek.
 - **Demo Mode Caching**: Built-in caching system for fast demonstration and reduced API costs.
@@ -16,7 +16,7 @@ Tri Mind is an advanced, multi-agent AI study assistant designed to provide comp
 
 - **Backend**: FastAPI, Python 3
 - **Frontend**: Vanilla HTML/CSS/JS (served as static files)
-- **AI Providers**: DeepSeek API, OpenRouter API
+- **AI Providers**: DeepSeek API, Google Gemini API
 - **Concurrency**: `asyncio` for parallel agent execution
 
 ## 📦 Installation & Setup
@@ -55,7 +55,7 @@ Tri Mind is an advanced, multi-agent AI study assistant designed to provide comp
    Open the `.env` file and add your keys:
    ```env
    DEEPSEEK_API_KEY=your_deepseek_api_key_here
-   OPENROUTER_API_KEY=your_openrouter_api_key_here
+   GEMINI_API_KEY=your_gemini_api_key_here
    CF_WORKER_URL=https://ai-image-worker.<your_name>.workers.dev
    ```
 

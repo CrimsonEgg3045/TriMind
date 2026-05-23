@@ -96,7 +96,7 @@ async def health():
         "google_client_id": os.getenv("GOOGLE_CLIENT_ID"),
         "agents": {
             "explanation": bool(os.getenv("DEEPSEEK_API_KEY")),
-            "math": bool(os.getenv("OPENROUTER_API_KEY")),
+            "math": bool(os.getenv("GEMINI_API_KEY")),
             "visual": bool(os.getenv("DEEPSEEK_API_KEY")),
             "synthesizer": bool(os.getenv("DEEPSEEK_API_KEY")),
         },

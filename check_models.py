@@ -1,22 +1,33 @@
-import httpx, asyncio
+"""
+Check Gemini API — Quick diagnostic to verify the Gemini API key works.
+"""
+
+import httpx
+import asyncio
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "your_api_key_here")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
 
 async def main():
+    if not GEMINI_API_KEY:
+        print("ERROR: GEMINI_API_KEY not set in .env")
+        return
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models?key={GEMINI_API_KEY}"
+
     async with httpx.AsyncClient(timeout=20.0) as client:
-        r = await client.get(
-            "https://openrouter.ai/api/v1/models",
-            headers={"Authorization": f"Bearer {OPENROUTER_API_KEY}"}
-        )
-        models = r.json()["data"]
-        free = [m for m in models if ":free" in m["id"]]
-        print(f"Total free models: {len(free)}\n")
-        for m in sorted(free, key=lambda x: x["id"]):
-            ctx = m.get("context_length", "?")
-            print(f"  {m['id']}  (ctx={ctx})")
+        r = await client.get(url)
+        r.raise_for_status()
+        models = r.json().get("models", [])
+        print(f"Total models available: {len(models)}\n")
+        for m in sorted(models, key=lambda x: x.get("name", "")):
+            name = m.get("name", "?")
+            display = m.get("displayName", "?")
+            print(f"  {name}  ({display})")
+
 
 asyncio.run(main())
